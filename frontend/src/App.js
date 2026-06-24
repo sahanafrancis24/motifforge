@@ -9,6 +9,8 @@ import CharacterizationPage from "@/pages/CharacterizationPage";
 import MiningPage from "@/pages/MiningPage";
 import EngineeringPage from "@/pages/EngineeringPage";
 import ExportPage from "@/pages/ExportPage";
+import ComparePage from "@/pages/ComparePage";
+import AnalysisLoader from "@/pages/AnalysisLoader";
 
 function App() {
   return (
@@ -22,7 +24,9 @@ function App() {
             <Route path="/characterize" element={<CharacterizationPage />} />
             <Route path="/mining" element={<MiningPage />} />
             <Route path="/engineer" element={<EngineeringPage />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="/export" element={<ExportPage />} />
+            <Route path="/analysis/:id" element={<AnalysisLoader />} />
           </Routes>
         </Layout>
         <Toaster

@@ -19,7 +19,7 @@ import uuid
 from datetime import datetime, timezone
 
 from services.cache import BioCache
-from services import ensembl, jaspar, motif_scan, conservation, graph_analysis, mining, engineering, export_service
+from services import ensembl, jaspar, motif_scan, conservation, graph_analysis, mining, engineering, export_service, epd
 
 
 ROOT_DIR = Path(__file__).parent
@@ -47,6 +47,10 @@ class ExtractRequest(BaseModel):
     downstream: int = 500
     matrix_limit: int = 30
     threshold: float = 0.85
+    species: str = "homo_sapiens"
+    tax_id: int = 9606
+    collection: str = "CORE"
+    source: str = "ensembl"  # ensembl | epd
 
 
 class GraphAnalyzeRequest(BaseModel):
@@ -90,14 +94,15 @@ def _parse_fasta(fasta_text: str) -> Dict[str, str]:
     return {"header": header or "user_sequence", "sequence": sequence}
 
 
-async def _get_pfms(limit: int) -> List[Dict[str, Any]]:
-    cached = await bio_cache.get("jaspar_matrix_list", {"limit": limit})
+async def _get_pfms(limit: int, tax_id: int = 9606, collection: str = "CORE") -> List[Dict[str, Any]]:
+    cache_key = {"limit": limit, "tax_id": tax_id, "collection": collection}
+    cached = await bio_cache.get("jaspar_matrix_list", cache_key)
     if cached:
         matrices = cached
     else:
-        matrices = await asyncio.to_thread(jaspar.list_human_core_matrices, 100, limit)
+        matrices = await asyncio.to_thread(jaspar.list_matrices, 100, limit, tax_id, collection)
         if matrices:
-            await bio_cache.set("jaspar_matrix_list", {"limit": limit}, matrices)
+            await bio_cache.set("jaspar_matrix_list", cache_key, matrices)
     if not matrices:
         return []
 
@@ -145,22 +150,36 @@ async def extract_promoter(req: ExtractRequest):
             "symbol": req.gene_symbol.upper(),
             "u": req.upstream,
             "d": req.downstream,
+            "species": req.species,
+            "source": req.source,
         }
-        cached = await bio_cache.get("ensembl_promoter", cache_key)
+        cached = await bio_cache.get("promoter", cache_key)
         if cached:
             promoter = cached
         else:
-            promoter = await asyncio.to_thread(
-                ensembl.extract_promoter_by_symbol,
-                req.gene_symbol.upper(),
-                req.upstream,
-                req.downstream,
-            )
-            if not promoter or not promoter.get("sequence"):
-                raise _data_unavailable(
-                    f"Ensembl REST: gene '{req.gene_symbol}' not found or sequence unavailable."
+            if req.source == "epd":
+                promoter = await asyncio.to_thread(
+                    epd.lookup_epd_promoter,
+                    req.gene_symbol.upper(),
+                    req.species,
                 )
-            await bio_cache.set("ensembl_promoter", cache_key, promoter)
+                if not promoter or not promoter.get("sequence"):
+                    raise _data_unavailable(
+                        f"EPDnew: promoter for '{req.gene_symbol}' not found in {req.species}. Try Ensembl source."
+                    )
+            else:
+                promoter = await asyncio.to_thread(
+                    ensembl.extract_promoter_by_symbol,
+                    req.gene_symbol.upper(),
+                    req.upstream,
+                    req.downstream,
+                    req.species,
+                )
+                if not promoter or not promoter.get("sequence"):
+                    raise _data_unavailable(
+                        f"Ensembl REST: gene '{req.gene_symbol}' not found in {req.species} or sequence unavailable."
+                    )
+            await bio_cache.set("promoter", cache_key, promoter)
     else:
         parsed = _parse_fasta(req.fasta)
         if not parsed["sequence"]:
@@ -175,9 +194,11 @@ async def extract_promoter(req: ExtractRequest):
     sequence = promoter["sequence"]
 
     # Fetch JASPAR PWMs and scan
-    pfms = await _get_pfms(req.matrix_limit)
+    pfms = await _get_pfms(req.matrix_limit, req.tax_id, req.collection)
     if not pfms:
-        raise _data_unavailable("JASPAR REST: no PWMs available.")
+        raise _data_unavailable(
+            f"JASPAR REST: no PWMs available for tax_id={req.tax_id} collection={req.collection}."
+        )
     hits = await asyncio.to_thread(motif_scan.scan_sequence, sequence, pfms, req.threshold, 30)
     stats = motif_scan.compute_gc_content(sequence)
     density = motif_scan.motif_density(hits, len(sequence))
@@ -214,6 +235,16 @@ async def extract_promoter(req: ExtractRequest):
         "motif_density": density,
         "conservation": conservation_data,
         "pwm_library_size": len(pfms),
+        "params": {
+            "species": req.species,
+            "tax_id": req.tax_id,
+            "collection": req.collection,
+            "source": req.source,
+            "upstream": req.upstream,
+            "downstream": req.downstream,
+            "matrix_limit": req.matrix_limit,
+            "threshold": req.threshold,
+        },
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -230,14 +261,118 @@ async def get_extraction(extract_id: str):
     return doc
 
 
+class CompareRequest(BaseModel):
+    gene_symbols: List[str]
+    upstream: int = 1500
+    downstream: int = 500
+    matrix_limit: int = 20
+    threshold: float = 0.85
+    species: str = "homo_sapiens"
+    tax_id: int = 9606
+    collection: str = "CORE"
+    source: str = "ensembl"
+    window: int = 100
+
+
+async def _run_single_extraction(symbol: str, req: "CompareRequest") -> Optional[Dict[str, Any]]:
+    sub = ExtractRequest(
+        gene_symbol=symbol,
+        upstream=req.upstream,
+        downstream=req.downstream,
+        matrix_limit=req.matrix_limit,
+        threshold=req.threshold,
+        species=req.species,
+        tax_id=req.tax_id,
+        collection=req.collection,
+        source=req.source,
+    )
+    try:
+        data = await extract_promoter(sub)
+        return data
+    except HTTPException:
+        return None
+
+
+@api_router.post("/compare")
+async def compare_genes(req: CompareRequest):
+    """Run extraction + graph analysis for multiple genes in parallel and return a comparison payload."""
+    if not req.gene_symbols or len(req.gene_symbols) < 2:
+        raise HTTPException(status_code=400, detail="Provide at least 2 gene symbols")
+    if len(req.gene_symbols) > 6:
+        raise HTTPException(status_code=400, detail="Maximum 6 genes per comparison")
+
+    results = await asyncio.gather(
+        *[_run_single_extraction(s.upper().strip(), req) for s in req.gene_symbols]
+    )
+
+    comparison = []
+    all_tfs: set = set()
+    for sym, ext in zip(req.gene_symbols, results):
+        if not ext:
+            comparison.append({
+                "gene_symbol": sym.upper(),
+                "available": False,
+                "reason": "Data unavailable from live sources",
+            })
+            continue
+        G = graph_analysis.build_regulatory_graph(ext["motif_hits"], req.window)
+        centrality = graph_analysis.centrality_metrics(G)
+        scores = graph_analysis.architecture_scores(G, centrality)
+        stats = graph_analysis.graph_statistics(G)
+        tf_set = {h["name"] for h in ext["motif_hits"]}
+        all_tfs.update(tf_set)
+        comparison.append({
+            "gene_symbol": sym.upper(),
+            "available": True,
+            "extraction_id": ext["id"],
+            "promoter": {
+                "length": ext["promoter"].get("length"),
+                "chromosome": ext["promoter"].get("chromosome"),
+                "ensembl_id": ext["promoter"].get("ensembl_id"),
+                "biotype": ext["promoter"].get("biotype"),
+            },
+            "metrics": {
+                "motif_count": ext["motif_count"],
+                "unique_tfs": ext["unique_tfs"],
+                "gc_content": ext["sequence_stats"].get("gc_content", 0),
+                "conservation_mean": (ext.get("conservation") or {}).get("mean") if ext.get("conservation") else None,
+                "node_count": stats["node_count"],
+                "edge_count": stats["edge_count"],
+                "density": stats["density"],
+                "community_count": stats["community_count"],
+                "complexity": scores["complexity"],
+                "topology": scores["topology"],
+                "architecture": scores["architecture"],
+                "modularity": scores["modularity"],
+                "avg_degree": stats["average_degree"],
+            },
+            "centrality_top": {
+                name: round(val, 4)
+                for name, val in sorted(centrality.get("degree", {}).items(), key=lambda x: -x[1])[:10]
+            },
+            "tfs": sorted(tf_set),
+        })
+
+    return {
+        "comparison": comparison,
+        "all_tfs": sorted(all_tfs),
+        "params": req.model_dump(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 @api_router.get("/jaspar/matrices")
-async def list_matrices(limit: int = 30):
-    """Return the JASPAR PWM library (loads from cache once fetched)."""
-    pfms = await _get_pfms(limit)
+async def list_matrices(limit: int = 30, tax_id: int = 9606, collection: str = "CORE"):
+    """Return JASPAR PWM library filtered by species (tax_id) and collection."""
+    if collection not in jaspar.COLLECTIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid collection. Use one of {jaspar.COLLECTIONS}.")
+    pfms = await _get_pfms(limit, tax_id, collection)
     if not pfms:
-        raise _data_unavailable("JASPAR REST unavailable")
+        raise _data_unavailable(f"JASPAR REST unavailable for tax_id={tax_id} collection={collection}")
     return {
         "count": len(pfms),
+        "tax_id": tax_id,
+        "collection": collection,
         "matrices": [
             {
                 "matrix_id": p["matrix_id"],
@@ -248,6 +383,19 @@ async def list_matrices(limit: int = 30):
                 "consensus": p["consensus"],
             }
             for p in pfms
+        ],
+    }
+
+
+@api_router.get("/jaspar/metadata")
+async def jaspar_metadata():
+    """Return available JASPAR collections and supported species."""
+    return {
+        "collections": jaspar.COLLECTIONS,
+        "species": jaspar.SPECIES,
+        "sources": [
+            {"id": "ensembl", "label": "Ensembl REST", "description": "Standard genomic promoter window via Ensembl"},
+            {"id": "epd", "label": "EPDnew (via UCSC)", "description": "Experimentally-defined promoters, EPD-standard window -499/+100"},
         ],
     }
 

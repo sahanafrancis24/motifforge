@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from "cytoscape-fcose";
+import svgExporter from "cytoscape-svg";
 
 if (!cytoscape.prototype.hasInitialised) {
   cytoscape.use(fcose);
+  cytoscape.use(svgExporter);
   cytoscape.prototype.hasInitialised = true;
 }
 
@@ -103,6 +105,29 @@ export default function GraphCanvas({ elements, height = 520, testId, onSelect }
     cyRef.current?.zoom(1);
     cyRef.current?.center();
   };
+  const downloadPng = () => {
+    if (!cyRef.current) return;
+    const data = cyRef.current.png({ bg: "#04060F", full: true, scale: 2 });
+    const a = document.createElement("a");
+    a.href = data;
+    a.download = "motifforge_graph.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  const downloadSvg = () => {
+    if (!cyRef.current) return;
+    const svgText = cyRef.current.svg({ scale: 1, full: true, bg: "#04060F" });
+    const blob = new Blob([svgText], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "motifforge_graph.svg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="relative">
@@ -126,6 +151,20 @@ export default function GraphCanvas({ elements, height = 520, testId, onSelect }
           className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700"
         >
           Reset
+        </button>
+        <button
+          onClick={downloadPng}
+          data-testid="graph-png"
+          className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 bg-blue-600/80 border border-blue-500 text-white hover:bg-blue-600"
+        >
+          PNG
+        </button>
+        <button
+          onClick={downloadSvg}
+          data-testid="graph-svg"
+          className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 bg-blue-600/80 border border-blue-500 text-white hover:bg-blue-600"
+        >
+          SVG
         </button>
       </div>
     </div>

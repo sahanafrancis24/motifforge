@@ -10,6 +10,7 @@ import {
   Download,
   Home,
   CircleDot,
+  GitCompare,
 } from "lucide-react";
 import { TIDS } from "@/constants/tids";
 
@@ -20,6 +21,7 @@ const NAV = [
   { to: "/characterize", label: "M3 · Architecture", icon: GitBranch, tid: TIDS.navCharacterization, code: "03" },
   { to: "/mining", label: "M4 · Mining", icon: PieChart, tid: TIDS.navMining, code: "04" },
   { to: "/engineer", label: "M5 · Engineering", icon: FlaskConical, tid: TIDS.navEngineering, code: "05" },
+  { to: "/compare", label: "M+ · Compare", icon: GitCompare, tid: TIDS.navCompare, code: "★" },
   { to: "/export", label: "M6 · Export Center", icon: Download, tid: TIDS.navExport, code: "06" },
 ];
 

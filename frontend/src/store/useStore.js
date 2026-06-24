@@ -36,6 +36,15 @@ export const useMotifStore = create(
       downstream: 500,
       setDownstream: (downstream) => set({ downstream }),
 
+      // Source / Species / Collection (new)
+      source: "ensembl",
+      setSource: (source) => set({ source }),
+      species: "homo_sapiens",
+      taxId: 9606,
+      setSpecies: (species, taxId) => set({ species, taxId }),
+      collection: "CORE",
+      setCollection: (collection) => set({ collection }),
+
       reset: () =>
         set({
           extraction: null,
@@ -53,6 +62,10 @@ export const useMotifStore = create(
         matrixLimit: state.matrixLimit,
         upstream: state.upstream,
         downstream: state.downstream,
+        source: state.source,
+        species: state.species,
+        taxId: state.taxId,
+        collection: state.collection,
       }),
     }
   )

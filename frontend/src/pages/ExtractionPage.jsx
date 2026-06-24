@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Loader2, Play, FileCode2, AlertTriangle } from "lucide-react";
+import { Loader2, Play, FileCode2, AlertTriangle, Share2, Database } from "lucide-react";
 import PurposeStrip from "@/components/PurposeStrip";
 import SequenceViewer from "@/components/SequenceViewer";
 import { MetricCard, PanelShell, SectionLabel, EmptyState } from "@/components/Primitives";
@@ -13,6 +13,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import {
   ResponsiveContainer,
   BarChart,
@@ -41,10 +48,19 @@ export default function ExtractionPage() {
   const [gene, setGene] = useState("");
   const [fasta, setFasta] = useState("");
   const [mode, setMode] = useState("gene");
-  const { upstream, setUpstream, downstream, setDownstream, matrixLimit, setMatrixLimit, threshold, setThreshold } =
-    useMotifStore();
+  const {
+    upstream, setUpstream, downstream, setDownstream,
+    matrixLimit, setMatrixLimit, threshold, setThreshold,
+    source, setSource, species, taxId, setSpecies, collection, setCollection,
+  } = useMotifStore();
   const extraction = useMotifStore((s) => s.extraction);
   const setExtraction = useMotifStore((s) => s.setExtraction);
+
+  const meta = useQuery({
+    queryKey: ["jaspar-meta"],
+    queryFn: api.metadata,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const mutation = useMutation({
     mutationFn: api.extract,
@@ -75,11 +91,30 @@ export default function ExtractionPage() {
         downstream,
         matrix_limit: matrixLimit,
         threshold,
+        source,
+        species,
+        tax_id: taxId,
+        collection,
       });
     } else {
       if (!fasta.trim()) return toast.error("Paste a FASTA sequence");
-      mutation.mutate({ fasta, matrix_limit: matrixLimit, threshold });
+      mutation.mutate({
+        fasta,
+        matrix_limit: matrixLimit,
+        threshold,
+        tax_id: taxId,
+        collection,
+      });
     }
+  };
+
+  const copyShareLink = () => {
+    if (!extraction?.id) return toast.error("Run an extraction first");
+    const url = `${window.location.origin}/analysis/${extraction.id}`;
+    navigator.clipboard.writeText(url).then(
+      () => toast.success("Share link copied to clipboard", { description: url }),
+      () => toast.error("Could not copy to clipboard")
+    );
   };
 
   return (
@@ -152,6 +187,85 @@ ACGTACGT..."
             </Tabs>
           </PanelShell>
 
+          <PanelShell title="DATA SOURCES">
+            <div className="space-y-3">
+              <div>
+                <Label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                  Promoter source
+                </Label>
+                <Select value={source} onValueChange={setSource}>
+                  <SelectTrigger
+                    data-testid={TIDS.sourceSelect}
+                    className="mt-1 bg-[#04060F] border-slate-800 font-mono text-xs"
+                  >
+                    <SelectValue placeholder="Choose source" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0A0F1D] border-slate-800">
+                    {(meta.data?.sources || []).map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="font-mono text-xs">
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-[10px] text-slate-500 mt-1">
+                  {(meta.data?.sources || []).find((s) => s.id === source)?.description}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                  Species
+                </Label>
+                <Select
+                  value={String(taxId)}
+                  onValueChange={(v) => {
+                    const sp = (meta.data?.species || []).find((x) => String(x.tax_id) === v);
+                    if (sp) setSpecies(sp.ensembl, sp.tax_id);
+                  }}
+                >
+                  <SelectTrigger
+                    data-testid={TIDS.speciesSelect}
+                    className="mt-1 bg-[#04060F] border-slate-800 font-mono text-xs"
+                  >
+                    <SelectValue placeholder="Choose species" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0A0F1D] border-slate-800 max-h-80">
+                    {(meta.data?.species || []).map((sp) => (
+                      <SelectItem key={sp.tax_id} value={String(sp.tax_id)} className="font-mono text-xs">
+                        {sp.common} · {sp.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                  JASPAR collection
+                </Label>
+                <Select value={collection} onValueChange={setCollection}>
+                  <SelectTrigger
+                    data-testid={TIDS.collectionSelect}
+                    className="mt-1 bg-[#04060F] border-slate-800 font-mono text-xs"
+                  >
+                    <SelectValue placeholder="Choose collection" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0A0F1D] border-slate-800">
+                    {(meta.data?.collections || []).map((c) => (
+                      <SelectItem key={c} value={c} className="font-mono text-xs">
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-[10px] text-slate-500 mt-1">
+                  CORE = curated · CNE = conserved · POLII = pol-II · PHYLOFACTS = inferred · FAM = family · UNVALIDATED = unrefined
+                </div>
+              </div>
+            </div>
+          </PanelShell>
+
           <PanelShell title="PARAMETERS">
             <div className="space-y-4">
               <SliderControl
@@ -221,6 +335,18 @@ ACGTACGT..."
 
         {/* Result Panel */}
         <div className="xl:col-span-8 space-y-4" data-testid={TIDS.extractionResult}>
+          {extraction && (
+            <div className="flex justify-end">
+              <Button
+                onClick={copyShareLink}
+                variant="outline"
+                data-testid={TIDS.shareBtn}
+                className="bg-slate-800/60 border-slate-700 text-slate-200 hover:bg-slate-700 font-mono text-xs h-9"
+              >
+                <Share2 className="w-3.5 h-3.5 mr-2" /> Share Analysis Link
+              </Button>
+            </div>
+          )}
           {!extraction ? (
             <EmptyState
               title="No extraction yet"

@@ -13,8 +13,12 @@ export default client;
 export const api = {
   extract: (payload) => client.post("/extract", payload).then((r) => r.data),
   getExtraction: (id) => client.get(`/extract/${id}`).then((r) => r.data),
-  listMatrices: (limit = 30) =>
-    client.get(`/jaspar/matrices?limit=${limit}`).then((r) => r.data),
+  listMatrices: (limit = 30, tax_id = 9606, collection = "CORE") =>
+    client
+      .get(`/jaspar/matrices?limit=${limit}&tax_id=${tax_id}&collection=${collection}`)
+      .then((r) => r.data),
+  metadata: () => client.get(`/jaspar/metadata`).then((r) => r.data),
+  compare: (payload) => client.post("/compare", payload).then((r) => r.data),
   buildGraph: (payload) => client.post("/graph/build", payload).then((r) => r.data),
   analyzeGraph: (payload) =>
     client.post("/graph/analyze", payload).then((r) => r.data),

@@ -60,9 +60,9 @@ def get_promoter_sequence(
 
 
 def extract_promoter_by_symbol(
-    symbol: str, upstream: int = 1500, downstream: int = 500
+    symbol: str, upstream: int = 1500, downstream: int = 500, species: str = "homo_sapiens"
 ) -> Optional[Dict[str, Any]]:
-    info = lookup_gene(symbol)
+    info = lookup_gene(symbol, species)
     if not info:
         return None
 
@@ -74,7 +74,8 @@ def extract_promoter_by_symbol(
         return None
 
     tss = gene_start if strand == 1 else gene_end
-    seq_info = get_promoter_sequence(chromosome, tss, strand, upstream, downstream)
+    species_short = _species_short(species)
+    seq_info = get_promoter_sequence(chromosome, tss, strand, upstream, downstream, species_short)
     if not seq_info:
         return None
 
@@ -86,6 +87,21 @@ def extract_promoter_by_symbol(
             "description": info.get("description"),
             "gene_start": gene_start,
             "gene_end": gene_end,
+            "species": species,
         }
     )
     return seq_info
+
+
+def _species_short(species: str) -> str:
+    mapping = {
+        "homo_sapiens": "human",
+        "mus_musculus": "mouse",
+        "rattus_norvegicus": "rat",
+        "drosophila_melanogaster": "drosophila_melanogaster",
+        "danio_rerio": "zebrafish",
+        "saccharomyces_cerevisiae": "saccharomyces_cerevisiae",
+        "caenorhabditis_elegans": "caenorhabditis_elegans",
+        "arabidopsis_thaliana": "arabidopsis_thaliana",
+    }
+    return mapping.get(species, species)

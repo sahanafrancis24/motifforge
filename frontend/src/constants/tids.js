@@ -7,6 +7,7 @@ export const TIDS = {
   navMining: "nav-mining",
   navEngineering: "nav-engineering",
   navExport: "nav-export",
+  navCompare: "nav-compare",
   brandLogo: "brand-logo",
 
   // Landing
@@ -21,7 +22,11 @@ export const TIDS = {
   downstreamInput: "downstream-input",
   matrixLimitInput: "matrix-limit-input",
   thresholdInput: "threshold-input",
+  sourceSelect: "source-select",
+  speciesSelect: "species-select",
+  collectionSelect: "collection-select",
   runExtractBtn: "run-extract-button",
+  shareBtn: "share-analysis-button",
   exampleTp53: "example-tp53",
   exampleBrca1: "example-brca1",
   exampleEgfr: "example-egfr",
@@ -50,6 +55,13 @@ export const TIDS = {
   // Engineering
   runEngineeringBtn: "run-engineering-button",
   suggestions: "engineering-suggestions",
+
+  // Compare
+  compareGenesInput: "compare-genes-input",
+  runCompareBtn: "run-compare-button",
+  compareRadar: "compare-radar",
+  compareTable: "compare-table",
+  compareHeatmap: "compare-heatmap",
 
   // Export
   exportFasta: "export-fasta",
