@@ -1,4 +1,66 @@
-/* App-scoped styles */
+/* =====================================================
+   MOTIFFORGE GLOBAL SCIENTIFIC BACKGROUND
+===================================================== */
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: #050A14;
+}
+
+.App {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+    z-index: 1;
+}
+
+/* =====================================================
+   VIDEO BACKGROUND
+===================================================== */
+
+.video-background {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -999;
+    overflow: hidden;
+}
+
+.video-background video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    /* Adjust between 0.08 - 0.18 */
+    opacity: 0.14;
+
+    filter:
+        brightness(0.45)
+        saturate(0.8)
+        contrast(1.05);
+}
+
+.video-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(3, 8, 18, 0.82),
+            rgba(5, 12, 25, 0.88)
+        );
+}
+
+/* =====================================================
+   EXISTING DNA BACKGROUND UPGRADED
+===================================================== */
+
 .dna-bg {
     position: absolute;
     inset: 0;
@@ -14,8 +76,161 @@
     width: 1200px;
     height: 1200px;
     border-radius: 50%;
-    border: 1px solid rgba(59, 130, 246, 0.08);
+
+    border: 1px solid rgba(0, 229, 194, 0.08);
+
+    filter: blur(1px);
 }
 
-.dna-bg::before { top: -300px; right: -300px; }
-.dna-bg::after { bottom: -300px; left: -300px; }
+.dna-bg::before {
+    top: -300px;
+    right: -300px;
+
+    animation: rotateRight 60s linear infinite;
+}
+
+.dna-bg::after {
+    bottom: -300px;
+    left: -300px;
+
+    animation: rotateLeft 80s linear infinite;
+}
+
+/* =====================================================
+   SCIENTIFIC GRID
+===================================================== */
+
+.dna-bg .grid {
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(0, 229, 194, 0.03) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(0, 229, 194, 0.03) 1px,
+            transparent 1px
+        );
+
+    background-size: 80px 80px;
+}
+
+/* =====================================================
+   GLOWING GRAPH NODES
+===================================================== */
+
+.dna-bg .node {
+    position: absolute;
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: rgba(0, 229, 194, 0.5);
+
+    box-shadow:
+        0 0 8px rgba(0, 229, 194, 0.3),
+        0 0 16px rgba(0, 229, 194, 0.15);
+}
+
+/* =====================================================
+   FLOATING PARTICLES
+===================================================== */
+
+.dna-bg .particle {
+    position: absolute;
+
+    width: 2px;
+    height: 2px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.25);
+
+    animation: floatParticle 18s infinite ease-in-out;
+}
+
+/* =====================================================
+   GLASSMORPHIC PANELS
+   (Makes video visible behind UI)
+===================================================== */
+
+.glass-panel {
+    background: rgba(8, 15, 30, 0.72);
+
+    backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(0, 229, 194, 0.12);
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,0.25);
+}
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #08111F;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,229,194,0.25);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,229,194,0.45);
+}
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+
+@keyframes rotateRight {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateLeft {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(0px);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-120px);
+        opacity: 0;
+    }
+}
