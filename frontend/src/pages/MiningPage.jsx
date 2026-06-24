@@ -147,10 +147,11 @@ function Results({ data }) {
         </PanelShell>
 
         <PanelShell title="CO-OCCURRENCE HEATMAP">
+          <div data-testid={TIDS.cooccurrenceMatrix}>
           {tfs.length === 0 ? (
             <div className="text-xs text-slate-500">Insufficient pairs for heatmap.</div>
           ) : (
-            <div className="overflow-auto max-h-[360px]" data-testid={TIDS.cooccurrenceMatrix}>
+            <div className="overflow-auto max-h-[360px]">
               <table className="text-[9px] font-mono border-collapse">
                 <thead>
                   <tr>
@@ -188,17 +189,19 @@ function Results({ data }) {
               </table>
             </div>
           )}
+          </div>
           <div className="text-[10px] font-mono text-slate-500 mt-2">
             Darker = higher co-occurrence within {data.cooccurrence.window}bp window.
           </div>
         </PanelShell>
       </div>
 
-      <PanelShell title="FREQUENT TRIPLET PATTERNS" right={<PieChart className="w-3.5 h-3.5 text-slate-500" />}>
+      <PanelShell title={`FREQUENT TRIPLET PATTERNS · ${topTriplets.length}`} right={<PieChart className="w-3.5 h-3.5 text-slate-500" />}>
+        <div data-testid={TIDS.tripletList}>
         {topTriplets.length === 0 ? (
           <div className="text-xs text-slate-500">No frequent triplets identified.</div>
         ) : (
-          <div className="overflow-x-auto" data-testid={TIDS.tripletList}>
+          <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono">
               <thead className="text-[10px] uppercase tracking-widest text-slate-500">
                 <tr>
@@ -225,6 +228,7 @@ function Results({ data }) {
             </table>
           </div>
         )}
+        </div>
       </PanelShell>
 
       <PanelShell title="ARCHITECTURE SIGNATURE">
