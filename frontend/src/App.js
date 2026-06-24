@@ -1,53 +1,39 @@
-import { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { Toaster } from "@/components/ui/sonner";
+import Layout from "@/components/Layout";
+import Landing from "@/pages/Landing";
+import ExtractionPage from "@/pages/ExtractionPage";
+import GraphStudioPage from "@/pages/GraphStudioPage";
+import CharacterizationPage from "@/pages/CharacterizationPage";
+import MiningPage from "@/pages/MiningPage";
+import EngineeringPage from "@/pages/EngineeringPage";
+import ExportPage from "@/pages/ExportPage";
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/extract" element={<ExtractionPage />} />
+            <Route path="/graph" element={<GraphStudioPage />} />
+            <Route path="/characterize" element={<CharacterizationPage />} />
+            <Route path="/mining" element={<MiningPage />} />
+            <Route path="/engineer" element={<EngineeringPage />} />
+            <Route path="/export" element={<ExportPage />} />
+          </Routes>
+        </Layout>
+        <Toaster
+          position="bottom-right"
+          theme="dark"
+          toastOptions={{
+            classNames: {
+              toast: "!bg-[#0A0F1D] !border-slate-800 !text-slate-200",
+            },
+          }}
+        />
       </BrowserRouter>
     </div>
   );

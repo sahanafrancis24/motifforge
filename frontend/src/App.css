@@ -1,34 +1,21 @@
-.App-logo {
-    height: 40vmin;
+/* App-scoped styles */
+.dna-bg {
+    position: absolute;
+    inset: 0;
     pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.dna-bg::before,
+.dna-bg::after {
+    content: '';
+    position: absolute;
+    width: 1200px;
+    height: 1200px;
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.08);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-}
-
-.App-link {
-    color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
+.dna-bg::before { top: -300px; right: -300px; }
+.dna-bg::after { bottom: -300px; left: -300px; }
