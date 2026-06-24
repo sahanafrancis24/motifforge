@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
+
 import Landing from "@/pages/Landing";
 import ExtractionPage from "@/pages/ExtractionPage";
 import GraphStudioPage from "@/pages/GraphStudioPage";
@@ -15,6 +16,16 @@ import AnalysisLoader from "@/pages/AnalysisLoader";
 function App() {
   return (
     <div className="App">
+      {/* Global Video Background */}
+      <div className="video-background">
+        <video autoPlay muted loop playsInline preload="auto">
+          <source src="/motifforge-bg.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark Scientific Overlay */}
+        <div className="video-overlay"></div>
+      </div>
+
       <BrowserRouter>
         <Layout>
           <Routes>
@@ -29,12 +40,14 @@ function App() {
             <Route path="/analysis/:id" element={<AnalysisLoader />} />
           </Routes>
         </Layout>
+
         <Toaster
           position="bottom-right"
           theme="dark"
           toastOptions={{
             classNames: {
-              toast: "!bg-[#0A0F1D] !border-slate-800 !text-slate-200",
+              toast:
+                "!bg-[#0A0F1D] !border-slate-800 !text-slate-200",
             },
           }}
         />
