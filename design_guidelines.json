@@ -1,0 +1,159 @@
+{
+  "project_name": "MotifForge",
+  "archetype": "Custom Scientific Workstation (Archetype 4: Swiss & High-Contrast mixed with Archetype 5: Luxury Deep Navy)",
+  "theme": "Dark",
+  "typography": {
+    "fonts": {
+      "heading": "IBM Plex Sans",
+      "body": "IBM Plex Sans",
+      "monospace": "IBM Plex Mono",
+      "forbidden_fonts": ["Inter", "Comic Sans", "Syne", "Space Grotesk"]
+    },
+    "hierarchy": {
+      "h1": "text-3xl md:text-4xl font-bold tracking-tight text-slate-100",
+      "h2": "text-xl md:text-2xl font-semibold tracking-tight text-slate-200",
+      "h3": "text-lg font-medium text-slate-300",
+      "body": "text-sm text-slate-400 leading-relaxed",
+      "sequence": "font-mono text-xs md:text-sm tracking-widest leading-none",
+      "labels": "text-xs font-mono uppercase tracking-[0.1em] text-slate-500"
+    }
+  },
+  "colors": {
+    "background": {
+      "app": "#060913",
+      "panel": "#0A0F1D",
+      "card": "#111827",
+      "canvas": "#000000"
+    },
+    "text": {
+      "primary": "#F8FAFC",
+      "secondary": "#94A3B8",
+      "muted": "#475569"
+    },
+    "border": {
+      "default": "rgba(255,255,255,0.1)",
+      "focus": "rgba(59,130,246,0.5)"
+    },
+    "brand": {
+      "primary": "#3B82F6",
+      "secondary": "#06B6D4",
+      "accent": "#8B5CF6"
+    },
+    "bioinformatics": {
+      "nucleotides": {
+        "A": {"color": "#22C55E", "tailwind": "text-green-500", "label": "Adenine"},
+        "T": {"color": "#EF4444", "tailwind": "text-red-500", "label": "Thymine"},
+        "G": {"color": "#F59E0B", "tailwind": "text-amber-500", "label": "Guanine"},
+        "C": {"color": "#3B82F6", "tailwind": "text-blue-500", "label": "Cytosine"}
+      },
+      "heatmaps": {
+        "viridis": ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"],
+        "rdbu": ["#ca0020", "#f4a582", "#f7f7f7", "#92c5de", "#0571b0"],
+        "plasma": ["#0d0887", "#7e03a8", "#cc4678", "#f89441", "#f0f921"]
+      }
+    }
+  },
+  "layout_spacing": {
+    "strategy": "Control Room / Data Dense",
+    "container": "w-full max-w-[1600px] mx-auto px-4 md:px-8",
+    "grid": {
+      "default": "grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6",
+      "hero": "grid grid-cols-1 md:grid-cols-12 gap-8"
+    },
+    "panels": {
+      "padding": "p-4 md:p-6",
+      "radius": "rounded-sm",
+      "border": "border border-slate-800"
+    }
+  },
+  "motion": {
+    "philosophy": "Functional & Minimal. Zero unnecessary shimmers or decorative animations.",
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover": "hover:bg-slate-800/50 hover:border-slate-700",
+    "active": "active:scale-[0.98]"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-blue-600 hover:bg-blue-700 text-white font-mono text-sm px-4 py-2 rounded-sm transition-colors",
+      "secondary": "bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm border border-slate-700 px-4 py-2 rounded-sm",
+      "ghost": "hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-mono text-sm px-4 py-2 rounded-sm"
+    },
+    "cards": {
+      "base": "bg-[#0A0F1D] border border-slate-800 rounded-sm overflow-hidden flex flex-col",
+      "header": "px-4 py-3 border-b border-slate-800 bg-[#060913]/50 flex items-center justify-between",
+      "body": "p-4 flex-grow"
+    },
+    "data_display": {
+      "sequence_viewer": "font-mono bg-[#060913] p-4 rounded-sm border border-slate-800 overflow-x-auto whitespace-pre",
+      "canvas_container": "w-full h-[500px] bg-black border border-slate-800 rounded-sm relative overflow-hidden",
+      "purpose_strip": "w-full bg-[#111827] border-b border-slate-800 px-6 py-3 flex items-center space-x-4 text-sm font-mono"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "size": "w-4 h-4 md:w-5 md:h-5",
+      "color": "text-slate-400"
+    }
+  },
+  "modules": [
+    {
+      "name": "Live Promoter Extraction Engine",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    },
+    {
+      "name": "Motif Grammar Graph Studio",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    },
+    {
+      "name": "Architecture Characterization",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    },
+    {
+      "name": "Architecture Mining",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    },
+    {
+      "name": "Promoter Engineering",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    },
+    {
+      "name": "Export Center",
+      "sections": ["Purpose", "Input", "Analysis", "Visualization", "Output", "Interpretation", "Export"]
+    }
+  ],
+  "accessibility_and_testing": {
+    "data_testid": "MANDATORY on all interactive elements (buttons, inputs, dropdowns, canvas nodes). Format: kebab-case, role-based. e.g., data-testid='extract-promoter-button'",
+    "contrast": "Ensure minimum 4.5:1 for text against deep navy backgrounds. Nucleotide colors MUST have accessible variants or dark backgrounds to maintain readability.",
+    "aria": "Include aria-labels for all icon-only buttons."
+  },
+  "media": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.pexels.com/photos/35967917/pexels-photo-35967917.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Abstract DNA particle strand, dark background. Use for hero section or overarching platform background.",
+        "category": "hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1644088379091-d574269d422f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxuZXR3b3JrJTIwZ3JhcGglMjBub2RlcyUyMGRhcmt8ZW58MHx8fHwxNzgyMzMzOTA4fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Dark network graph lines. Use for Graph Studio background or mining visualization.",
+        "category": "background"
+      }
+    ],
+    "content_images": [
+      {
+        "url": "https://images.unsplash.com/photo-1518152006812-edab29b069ac?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHwyfHxiaW9sb2d5JTIwbGFib3JhdG9yeSUyMG1vZGVybnxlbnwwfHx8fDE3ODIzMzM5MDh8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Modern biology lab with microscopes. Use in 'About' or 'Laboratory Context' sections.",
+        "category": "content"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Strictly adhere to the Deep Navy/Dark Scientific theme. No bright purple gradients, no gaming glow.",
+    "Use standard <div> and <section> tags with pure Tailwind for layout to achieve a dense 'Control Room' aesthetic.",
+    "Implement Shadcn/UI for tables, selects, and dialogs, but override their border-radius to 2px or 0px to look sharper and more scientific.",
+    "Data density is critical. Use standard padding but don't waste vertical space with huge margins between metrics.",
+    "All interactive elements MUST have a data-testid attribute for rigorous automated testing.",
+    "Nucleotide coloring in sequence viewers is mandatory (A: Green, T: Red, G: Yellow, C: Blue) using the text classes provided in the bio color config.",
+    "For graph network visualizations, aim for distinct node/edge colors with scientific legends (e.g., using Recharts, visx, or D3 patterns).",
+    "Ensure every screen incorporates the required structured sections: Purpose, Input, Analysis, Visualization, Output, Interpretation, Export."
+  ]
+}
